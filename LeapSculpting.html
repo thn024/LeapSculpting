@@ -1,0 +1,504 @@
+<html>
+  <head>
+    <title>Camera - Leap</title>
+    <style>
+      canvas { width: 100%; height: 100%; background-color: #f0; }
+    </style>
+    <script src="three.js"></script>
+    <script src="leap.js"></script>
+    <script src="Hand.js"></script>
+    <script src="Finger.js"></script>
+    <script src="Lathe.js"></script>
+  </head>
+  <body>
+    <script>
+
+    var scene,renderer,camera,cube;
+    var debug_mode = true;
+    var spheres = {};
+
+    //-----------------------------------
+    var debug;
+    var collisionDebug;
+    var controller = new Leap.Controller({enableGestures: true});
+    //-----------------------------------
+    var handIds = {};
+    var handObj = {};
+
+    var d2;
+    var line;
+
+
+    //------------------------------------
+    var cameraRotationDegrees = 0;
+    var cameraRotationDegreesUp = 0;
+    var cameraRotationDegreesDown = 0;
+    var started = false;
+    var initialCameraPosition = 0;
+    var finalCameraPosition = 0;
+    var selectedItem = null;
+    var transformationMode = false;
+
+    //------------------------------------
+    //flying variables
+    //------------------------------------
+    var isFlying = false;
+    var palmOffset = new THREE.Vector3();
+    var initialFlyingPosition;
+    var newFlyingPosition;
+
+    var weight = 0.0;;
+
+    //------------------------------------
+
+
+    //------------------------------------
+    var MODES =  {
+                        INITIAL : {value : 0, name: "INITIAL"},
+                        HEIGHT : {value : 1, name: "HEIGHT"},
+                        WIDTH : {value : 2, name: "WIDTH"},
+                        FINISHED : {value : 3, name : "FINISHED"}
+                      };
+    var currentMode = MODES.INITIAL;
+    var lathe;
+    var openPalmCount = 0;
+    var finishedStart = false;
+
+
+
+
+    var collidables = [];
+
+    main();
+
+    
+
+
+    function init()
+    {
+      //init camera, renderer and scene
+      scene = new THREE.Scene();
+      renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColorHex( 0x0099CC, 1 );
+      document.body.appendChild(renderer.domElement); 
+
+      camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 3000 );
+      initCamera();
+
+      
+
+
+      var material = new THREE.LineBasicMaterial({ color: 0xFFFFFF });
+      var Light = new THREE.PointLight(0xFFFFFF);
+      Light.position = {x:-20, y:600, z:30};
+
+      scene.add(Light);
+
+      var Light2 = new THREE.PointLight(0xFFFFFF);
+      Light2.position = {x:50, y: 0, z: -10}
+
+      scene.add(Light2);
+
+      var Light3 = new THREE.PointLight(0xFFFFFF);
+      Light2.position = {x:-100, y: 200, z: -10}
+
+      scene.add(Light3);
+
+
+      //var g = new Lathe(scene,0,0,0);
+
+    }
+
+    function initCamera()
+    {
+      camera.position.x = 0;
+      camera.position.y = 150;
+      camera.position.z = 400;
+    }
+
+    //-------------------------------------------------------------
+    //CAMERA STUFF
+    //-------------------------------------------------------------
+
+    function plane()
+    {
+      var planeGeo = new THREE.PlaneGeometry(2000,2000,1,1);
+      //var planeMat = new THREE.MeshLambertMaterial();
+      planeGeo.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
+      //planeGeo.applyMatrix(new THREE.Matrix4().makeTranslation(0, -10, 0));
+      var planeMat = new THREE.MeshBasicMaterial();
+
+      return new THREE.Mesh(planeGeo, planeMat);
+    }
+
+    var leftStart = false;
+    var rightStart = false;
+
+    function showHands(frame)
+    {
+        isFlying = true;
+        leftStart = false;
+        rightStart = false;
+        openPalmCount = 0;
+
+        if (frame.hands === undefined ) { 
+          var handsLength = 0 
+        } else {
+          var handsLength = frame.hands.length;
+        }
+        
+        for(id in handIds)
+        {
+          handIds[id] = false;
+        }
+
+        for (var handId = 0, handCount = handsLength; handId != handCount; handId++) 
+        {
+          var hand = frame.hands[handId];
+          var posX = (hand.palmPosition[0]*1);
+          var posY = (hand.palmPosition[2]*1)-400;
+          var posZ = (hand.palmPosition[1]*1)-200;
+          var rotX = (hand.rotation[1][2]*90);
+          var rotY = (hand.rotation[1][1]*90);
+          var rotZ = (hand.rotation[1][0]*90);
+          //console.log(hand.id);
+          
+
+          /*
+          if (!sphere) {
+                spheres[hand.id] = hand.id;
+          } else {
+
+              moveSphere(sphereDiv, posX, posY, posZ, rotX, rotY, rotZ);
+            
+          }
+          */
+          if(handIds[hand.id] == undefined)
+          {
+            handObj[hand.id] = new Hand(scene);
+            if(posX > 0)
+            {
+              handObj[hand.id].setSide(1);
+            }
+            else
+            {
+              handObj[hand.id].setSide(0);
+            }
+            scene.add(handObj[hand.id].palm);
+            //console.log("about to make a new hand cube id: " + hand.id);
+          }
+          handObj[hand.id].palm.position = new THREE.Vector3(posX,posZ,posY);
+          handObj[hand.id].palmNormal = new THREE.Vector3(hand.palmNormal[0], hand.palmNormal[1], hand.palmNormal[2]);
+          
+
+          if(handObj[hand.id].openPalm)
+          {
+            openPalmCount++;
+          }
+          
+          handObj[hand.id].updateFingers(frame.hands[handId].fingers);
+
+          handIds[hand.id] = true;
+
+          //console.log(handObj[hand.id].noFingers);
+
+
+          if(currentMode == MODES.INITIAL && openPalmCount == 2)
+          {
+            console.log("start the cylinder mesh");
+            lathe = new Lathe(scene);
+            currentMode = MODES.HEIGHT;
+            console.log("going to height mode")
+          }
+
+
+          if(handObj[hand.id].side)
+          {
+            rightStart = handObj[hand.id];
+          }
+          else
+          {
+            leftStart = handObj[hand.id];
+          }
+          
+          
+        }
+
+
+
+        
+        //console.log(isFlying);
+
+        //deleting
+        for (handId in handIds) {
+          //console.log("handId " + handId);
+          //console.log("true? :: " + handIds[handId]);
+          if (!handIds[handId]) {
+            //console.log("deleting a hand cube id: " + handId);
+            handObj[handId].onRemove();
+            //scene.remove(handObj[handId].palm);
+            delete handIds[handId];
+            //delete handObj[handId];
+          }
+        }
+    }
+
+
+
+
+    function handleGestures(gesturesArray)
+    {
+
+      for(gesture in gesturesArray)
+      {
+        var hand = handObj[gesturesArray[gesture].handIds[0]];
+        var side = handObj[gesturesArray[gesture].handIds[0]].side == 1? true : false;
+        
+        switch(gesturesArray[gesture].type)
+        {
+          case "swipe" : 
+
+            //console.log(gesturesArray[gesture].direction);
+            if(gesturesArray[gesture].speed > 600.0)
+            {
+            //console.log(hand.swipeDirection);
+            //cameraRotationDegrees += (gesturesArray[gesture].position[0] - gesturesArray[gesture].startPosition[0]) / 40.0;
+            //rotateCamera(cameraRotationDegrees);
+            }
+            break;
+          case "circle" :
+          /*
+          if(side)
+          {
+            
+            console.log("right: did a circle");
+          }
+          else
+          {
+            console.log("left: did a circle")
+
+          }
+          */
+          d2 = gesturesArray[gesture];
+          if(gesturesArray[gesture].state != "stop")
+          {
+            if(gesturesArray[gesture].normal[2] < 0)
+            {
+
+              //cameraRotationDegrees += 0.75;
+              //camera.position.x += 2;
+              console.log("clockwise rotation");
+
+            }
+            else
+            {
+              //camera.position.x -= 2;
+              console.log("counter clockwise rotation"); 
+            }
+              //cameraRotationDegrees -= 0.75;
+              
+          }
+          //console.log(gesturesArray[gesture]);
+          //console.log(cameraRotationDegrees);
+          //rotateCamera(cameraRotationDegrees, cameraRotationDegreesUp);
+          return;
+          break;
+          case "keyTap" :
+          if(side)
+          {
+            console.log("right: did a keytap");
+          }
+          else
+          {
+            //console.log("left: did a keytap")
+          } break;
+          case "screenTap" :
+          if(side)
+          {
+            //console.log("right: did a screentap");
+            debugCylinder.material.wireframe = false;
+          }
+          else
+          {
+            //console.log("left: did a screentap")
+            debugCylinder.material.wireframe = true;
+          } break;
+          default : //console.log("new gesture" + gesturesArray[gesture].type); 
+        }
+        break;
+      }
+    }
+
+
+
+    function rayCastPalm()
+    {
+      for(id in handObj)
+      {
+        //console.log(handObj[id]);
+        
+        
+        handObj[id].update(camera);
+        //handObj[id].updateRay(camera);
+        handObj[id].checkCollisions(collidables);
+        //line.geometry.verticesNeedUpdate = true;
+        //console.log(handObj[id].palmNormal);
+      }
+
+      if(currentMode == MODES.HEIGHT && rightStart && leftStart)
+          {
+            
+            lathe.setHeight(rightStart.palm.position.y - leftStart.palm.position.y);
+            lathe.scale();
+            if(leftStart.noFingers)
+            {
+              console.log("going to width mode");
+               currentMode = MODES.WIDTH;
+            }
+          }
+
+        if(currentMode == MODES.WIDTH && rightStart && leftStart)
+        {
+          lathe.setWidth(rightStart.palm.position.x - leftStart.palm.position.x - 100);
+          lathe.scale();
+          if(rightStart.noFingers)
+          {
+            console.log("finished");
+            currentMode = MODES.FINISHED;
+          }
+        }
+        
+        if(currentMode == MODES.FINISHED &&  (leftStart || rightStart))
+        {
+          checkMeshCollisions(leftStart);
+          checkMeshCollisions(rightStart);
+        }
+    }
+
+    controller.loop(function(frame) {
+      var startX = camera.position.x;
+      var startY = camera.position.y;
+      var startZ = camera.position.z;
+      var state  = null;
+      var startFrame = null;
+
+
+      // if there was a gesture in this frame, handle it
+      if(frame.gestures.length > 0)
+      {
+        //console.log(frame.gestures);
+        handleGestures(frame.gestures);
+      }
+
+
+      
+      if(debug_mode)
+      {
+        showHands(frame);
+      }
+      
+      rayCastPalm();
+
+      if (frame.valid) {
+        debug = frame;
+
+        if (state == null) {
+          if (frame.hands.length > 0 && frame.pointables.length <= 1) {
+            
+          }
+        } else if (state == 'moving') {
+          var t = startFrame.translation(frame);
+          cube.position.x = t[0] * 10 + startX;
+          cube.position.y = t[1] * 10 + startY;
+          cube.position.z = t[2] * 10 + startZ;
+          if (frame.hands.length == 1 || frame.pointables.legnth > 1) {
+            state = null;
+          }
+        }
+      }
+      renderer.render(scene, camera);
+    });
+
+
+    var fingerDebug;
+    
+    function checkMeshCollisions(handObject)
+    {
+      /*
+      debugCylinder.updateMatrixWorld();
+      for(vertex in lathe.mesh.geometry.vertices)
+      {
+        
+
+        var what = Math.pow(
+        Math.pow(debugCylinder.geometry.vertices[vertex].x - handObject.palm.position.x, 2) +
+        Math.pow(debugCylinder.geometry.vertices[vertex].y - handObject.palm.position.z, 2) +
+        Math.pow(debugCylinder.geometry.vertices[vertex].z - handObject.palm.position.y, 2), .5) ;
+        //console.log(debugCylinder.geometry.vertices[vertex]);
+        //console.log(handObject.palm.position);
+        //console.log(what);
+        //console.log(vertex);
+        //if(debugCylinder.geometry.vertices[vertex].position.distanceToSquared(handObject.palm.position) <= 1000 )
+        if(false)
+        {
+          //console.log("shit just got real");
+        }
+        else 
+        {
+          //console.log(debugCylinder.position.distanceToSquared(handObject.palm.position));
+          //console.log(handObject.palm.position);
+          //console.log(debugCylinder.position);
+          //return;
+        }
+      }
+
+      */
+        for(finger in handObject.fingers)
+        {
+          //console.log(handObj[hand].fingers[finger].position);
+          var ray = new THREE.Raycaster(handObject.fingers[finger].position, handObject.fingers[finger].direction)
+          var collisionResults = ray.intersectObject(debugCylinder)
+          fingerDebug = handObject.fingers;
+          if ( collisionResults.length > 0 && collisionResults[0].distance < 30 ) 
+            {
+              //console.log(" Hit ");
+              collisionDebug = collisionResults[0];
+              //collisionResults[0].face.color.setRGB( Math.random(), Math.random(), Math.random());
+              /*
+              debugCylinder.geometry.vertices[collisionResults[0].face.a].subSelf(collisionResults[0].face.normal.clone());
+              debugCylinder.geometry.vertices[collisionResults[0].face.b].subSelf(collisionResults[0].face.normal.clone());
+              debugCylinder.geometry.vertices[collisionResults[0].face.c].subSelf(collisionResults[0].face.normal.clone());
+              debugCylinder.geometry.vertices[collisionResults[0].face.d].subSelf(collisionResults[0].face.normal.clone());
+              */
+              debugCylinder.geometry.vertices[collisionResults[0].face.a].subSelf(handObject.fingers[finger].direction);
+              debugCylinder.geometry.vertices[collisionResults[0].face.b].subSelf(handObject.fingers[finger].direction);
+              debugCylinder.geometry.vertices[collisionResults[0].face.c].subSelf(handObject.fingers[finger].direction);
+              debugCylinder.geometry.vertices[collisionResults[0].face.d].subSelf(handObject.fingers[finger].direction);
+
+              debugCylinder.geometry.__dirtyVertices = true;
+              debugCylinder.geometry.dynamic = true;
+
+
+              
+            }
+          else if (collisionResults.length > 0)
+          {
+            //console.log(collisionResults[0].distance);
+          }
+        }
+
+        debugCylinder.geometry.verticesNeedUpdate = true;
+              //debugCylinder.geometry.colorsNeedUpdate = true;
+              debugCylinder.geometry.computeFaceNormals();
+    }
+
+
+    function main()
+    {
+      init();
+    }
+    </script>
+    <div id="out"></div>
+  </body>
+</html>
