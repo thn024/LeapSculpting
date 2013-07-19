@@ -22,81 +22,13 @@ function Hand(scene)
 
 }
 
-Hand.prototype.update = function(camera)
+Hand.prototype.update = function(camera, frame)
 {
 
 
-	var matrix = new THREE.Matrix4();
-	matrix.identity();
-	matrix.makeRotationY(camera.rotation.y);
-	var matrix2 = new THREE.Matrix4();
-	matrix2.identity();
-	matrix2.makeTranslation(camera.position);
-
-	matrix = camera.matrix;
-	//multiplies palm position by camera rotation matrix
-
-	this.palm.position = matrix.multiplyVector3(this.palm.position);
-	//this.palm.position = matrix.multiplyVector3(this.palm.position);
 	
 
 
-	for(finger in this.fingers)
-	{
-		this.fingers[finger].position = matrix.multiplyVector3(this.fingers[finger].position);
-		//this.fingers[finger].direction = matrix.multiplyVector3(this.fingers[finger].direction);
-		this.fingers[finger].update();
-	//this.fingers[finger].position = matrix.multiplyVector3(this.fingers[finger].position);
-	}
-
-
-};
-
-Hand.prototype.checkCollisions = function(collidablesList)
-{
-	//if left hand dont select
-	if(this.side == 0 || this.openPalm == true || transformationMode == true)
-		return null;
-	var collisionResults = this.rayCaster.intersectObjects( collidablesList );
-	var currentCollision = null;
-	if(collisionResults.length > 0)
-	{
-		for(collidable in collisionResults)
-		{
-
-			currentCollision = collisionResults[collidable];
-			var color = collisionResults[collidable].object.material.color;
-			if(selectedItem != null)
-			{
-				selectedItem.object.material.color.setRGB(1,0,0);
-			}
-			//color.setRGB(0,1,1);
-			/*
-			this.selectionCounter++;
-			if(this.selectionCounter == 50)
-			{
-				
-				if(color.r == 1)
-				{
-					color.setRGB(0,1,1);
-				}
-				else
-				{
-					color.setRGB(1,0,0);
-				}
-
-				this.selectionCounter = 0;
-			}
-			*/
-			//console.log(this.selectionCounter);
-			//collisionResults[collidable].object.material.color.setRGB(1,0,0);
-			selectedItem = currentCollision;
-			break;
-		}
-
-
-		//console.log("collided with a cube somewhere");
-	}
 };
 
 Hand.prototype.setSide = function(side)
@@ -170,6 +102,7 @@ Hand.prototype.updateFingers = function(fingerArray)
 	{
 
 
+		//console.log("something in here");
 		//If the current finger is not in our data structure, we should add it into that index of the data structure
 		if(this.fingers[fingerId] == undefined)
 		{
@@ -212,6 +145,8 @@ Hand.prototype.updateFingers = function(fingerArray)
 		//console.log("id :: " + fingerId + " :: " + this.fingers[fingerId].position.x + " "  + this.fingers[fingerId].position.y + " " + this.fingers[fingerId].position.z);
 
 
+
+
 	}
 
 	for(fingerId in this.fingers)
@@ -224,6 +159,37 @@ Hand.prototype.updateFingers = function(fingerArray)
 		}
 
 		
+	}
+
+
+	//apply the matrix rotations and stuff to the positions and rotations afterwards!
+
+
+	var matrix = new THREE.Matrix4();
+	matrix.identity();
+	matrix.makeRotationY(camera.rotation.y);
+	var matrix2 = new THREE.Matrix4();
+	matrix2.identity();
+	matrix2.makeTranslation(camera.position);
+
+	matrix = camera.matrix;
+	matrix3 = new THREE.Matrix4();
+
+	camera.matrix.extractRotation(matrix3);
+	//multiplies palm position by camera rotation matrix
+
+	this.palm.position = matrix.multiplyVector3(this.palm.position);
+	//this.updateFingers(this.fingers);
+	//this.palm.position = matrix.multiplyVector3(this.palm.position);
+	
+
+
+	for(finger in this.fingers)
+	{
+		this.fingers[finger].position = matrix.multiplyVector3(this.fingers[finger].position);
+		//this.fingers[finger].direction = matrix3.multiplyVector3(this.fingers[finger].direction);
+		this.fingers[finger].update();
+	//this.fingers[finger].position = matrix.multiplyVector3(this.fingers[finger].position);
 	}
 
 };

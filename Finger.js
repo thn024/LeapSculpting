@@ -20,6 +20,6 @@ Finger.prototype.update = function()
 	//console.log(this.position.clone());
 	
 	this.ray.geometry.vertices[0] = this.mesh.position.clone();
-	this.ray.geometry.vertices[1] = this.position.clone().addSelf(this.direction.clone().multiplyScalar(10));
+	this.ray.geometry.vertices[1] = this.position.clone().addSelf(this.direction.clone().multiplyScalar(100));
 	this.ray.geometry.verticesNeedUpdate = true;
 }

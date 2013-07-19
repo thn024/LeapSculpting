@@ -245,7 +245,10 @@
     }
 
 
-
+    function rotateMesh(deg)
+    {
+      debugCylinder.rotation.y = deg;
+    }
 
     function handleGestures(gesturesArray)
     {
@@ -285,23 +288,22 @@
           {
             if(gesturesArray[gesture].normal[2] < 0)
             {
-
-              //cameraRotationDegrees += 0.75;
               //camera.position.x += 2;
+              //cameraRotationDegrees += .05;
               console.log("clockwise rotation");
 
             }
             else
             {
               //camera.position.x -= 2;
+              //cameraRotationDegrees -= .05;
               console.log("counter clockwise rotation"); 
             }
-              //cameraRotationDegrees -= 0.75;
               
           }
           //console.log(gesturesArray[gesture]);
           //console.log(cameraRotationDegrees);
-          //rotateCamera(cameraRotationDegrees, cameraRotationDegreesUp);
+          rotateMesh(cameraRotationDegrees);
           return;
           break;
           case "keyTap" :
@@ -332,18 +334,11 @@
 
 
 
-    function rayCastPalm()
+    function rayCastPalm(frame)
     {
       for(id in handObj)
       {
-        //console.log(handObj[id]);
-        
-        
-        handObj[id].update(camera);
-        //handObj[id].updateRay(camera);
-        handObj[id].checkCollisions(collidables);
-        //line.geometry.verticesNeedUpdate = true;
-        //console.log(handObj[id].palmNormal);
+        handObj[id].update(camera, frame);
       }
 
       if(currentMode == MODES.HEIGHT && rightStart && leftStart)
@@ -398,7 +393,7 @@
         showHands(frame);
       }
       
-      rayCastPalm();
+      rayCastPalm(frame);
 
       if (frame.valid) {
         debug = frame;
@@ -459,11 +454,12 @@
           //console.log(handObj[hand].fingers[finger].position);
           var ray = new THREE.Raycaster(handObject.fingers[finger].position, handObject.fingers[finger].direction)
           var collisionResults = ray.intersectObject(debugCylinder)
-          fingerDebug = handObject.fingers;
+          fingerDebug = handObject.fingers[finger];
           if ( collisionResults.length > 0 && collisionResults[0].distance < 30 ) 
             {
               //console.log(" Hit ");
               collisionDebug = collisionResults[0];
+
               //collisionResults[0].face.color.setRGB( Math.random(), Math.random(), Math.random());
               /*
               debugCylinder.geometry.vertices[collisionResults[0].face.a].subSelf(collisionResults[0].face.normal.clone());
@@ -471,10 +467,10 @@
               debugCylinder.geometry.vertices[collisionResults[0].face.c].subSelf(collisionResults[0].face.normal.clone());
               debugCylinder.geometry.vertices[collisionResults[0].face.d].subSelf(collisionResults[0].face.normal.clone());
               */
-              debugCylinder.geometry.vertices[collisionResults[0].face.a].subSelf(handObject.fingers[finger].direction);
-              debugCylinder.geometry.vertices[collisionResults[0].face.b].subSelf(handObject.fingers[finger].direction);
-              debugCylinder.geometry.vertices[collisionResults[0].face.c].subSelf(handObject.fingers[finger].direction);
-              debugCylinder.geometry.vertices[collisionResults[0].face.d].subSelf(handObject.fingers[finger].direction);
+              debugCylinder.geometry.vertices[collisionResults[0].face.a].addSelf(handObject.fingers[finger].direction);
+              debugCylinder.geometry.vertices[collisionResults[0].face.b].addSelf(handObject.fingers[finger].direction);
+              debugCylinder.geometry.vertices[collisionResults[0].face.c].addSelf(handObject.fingers[finger].direction);
+              debugCylinder.geometry.vertices[collisionResults[0].face.d].addSelf(handObject.fingers[finger].direction);
 
               debugCylinder.geometry.__dirtyVertices = true;
               debugCylinder.geometry.dynamic = true;
