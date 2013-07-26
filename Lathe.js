@@ -12,9 +12,11 @@ function Lathe(scene)
       var cylinder = new THREE.Mesh(new THREE.SphereGeometry(100, 100, 100), new THREE.MeshPhongMaterial( { ambient: 0x050505, color: 0xFF3300, specular: 0x555555, shininess: 10 } ) );
 
       debugCylinder = cylinder;
+      console.log("created the debugCylinder");
+      debugCylinder.position.y = 100;
       //cylinder.overdraw = true;
       scene.add(cylinder);
-      cylinder.translateY(180);
+      cylinder.translateY(100);
       cylinder.translateZ(-150);
       //cylinder.rotation.z = Math.PI/2;
       cylinder.material.wireframe = true;
@@ -39,5 +41,5 @@ Lathe.prototype.setWidth = function(xval)
 
 Lathe.prototype.setHeight = function(yval)
 {
-      this.yscale = yval/200.0;
+      this.yscale = yval/100.0;
 }

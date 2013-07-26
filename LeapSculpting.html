@@ -9,6 +9,7 @@
     <script src="Hand.js"></script>
     <script src="Finger.js"></script>
     <script src="Lathe.js"></script>
+    <script src="SphereGeometry.js"></script>
   </head>
   <body>
     <script>
@@ -135,8 +136,10 @@
     var leftStart = false;
     var rightStart = false;
 
+      var debugFrame;
     function showHands(frame)
     {
+          debugFrame = frame;
         isFlying = true;
         leftStart = false;
         rightStart = false;
@@ -462,15 +465,17 @@
 
               //collisionResults[0].face.color.setRGB( Math.random(), Math.random(), Math.random());
               /*
-              debugCylinder.geometry.vertices[collisionResults[0].face.a].subSelf(collisionResults[0].face.normal.clone());
+              debugCylinder.geometry.vertices[collisionResults[0].face.a].subSelf(collisionResults[0].face.normal.clone());          
               debugCylinder.geometry.vertices[collisionResults[0].face.b].subSelf(collisionResults[0].face.normal.clone());
               debugCylinder.geometry.vertices[collisionResults[0].face.c].subSelf(collisionResults[0].face.normal.clone());
               debugCylinder.geometry.vertices[collisionResults[0].face.d].subSelf(collisionResults[0].face.normal.clone());
               */
-              debugCylinder.geometry.vertices[collisionResults[0].face.a].addSelf(handObject.fingers[finger].direction);
-              debugCylinder.geometry.vertices[collisionResults[0].face.b].addSelf(handObject.fingers[finger].direction);
-              debugCylinder.geometry.vertices[collisionResults[0].face.c].addSelf(handObject.fingers[finger].direction);
-              debugCylinder.geometry.vertices[collisionResults[0].face.d].addSelf(handObject.fingers[finger].direction);
+              
+              debugCylinder.geometry.vertices[collisionResults[0].face.a].subSelf(handObject.fingers[finger].direction);
+              debugCylinder.geometry.vertices[collisionResults[0].face.b].subSelf(handObject.fingers[finger].direction);
+              debugCylinder.geometry.vertices[collisionResults[0].face.c].subSelf(handObject.fingers[finger].direction);
+              debugCylinder.geometry.vertices[collisionResults[0].face.d].subSelf(handObject.fingers[finger].direction);
+              
 
               debugCylinder.geometry.__dirtyVertices = true;
               debugCylinder.geometry.dynamic = true;
