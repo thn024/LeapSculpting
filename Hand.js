@@ -25,7 +25,7 @@ function Hand(scene)
 Hand.prototype.update = function(camera, frame)
 {
 
-
+	
 	
 
 
@@ -113,8 +113,8 @@ Hand.prototype.updateFingers = function(fingerArray)
 			scene.add(this.fingers[fingerId].ray);
 		}
 		var pointable = fingerArray[fingerId];
-		var posX = (pointable.tipPosition[0]*1);
-		var posY = (pointable.tipPosition[2]*1)-400;//-200;
+		var posX = (pointable.tipPosition[0]*1.5);
+		var posY = (pointable.tipPosition[2]*1)-600;//-200;
 		var posZ = (pointable.tipPosition[1]*1)-200;//-400;
 		var dirX = (pointable.direction[0]);
 		var dirY = (pointable.direction[1]);

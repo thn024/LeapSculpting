@@ -9,7 +9,7 @@ function Lathe(scene)
 
                                     //Cylinder is made using (radiusTop, radiusBottom, height, radiusSegments, heightSegments, openEnded)
 	//var cylinder = new THREE.Mesh(new THREE.CylinderGeometry(80, 80, 500, 50, 100, false), new THREE.MeshPhongMaterial( { ambient: 0x050505, color: 0xFF3300, specular: 0x555555, shininess: 10 } ) );
-      var cylinder = new THREE.Mesh(new THREE.SphereGeometry(100, 100, 100), new THREE.MeshPhongMaterial( { ambient: 0x050505, color: 0xFF3300, specular: 0x555555, shininess: 10 } ) );
+      var cylinder = new THREE.Mesh(new THREE.SphereGeometry(100, 100, 100), new THREE.MeshPhongMaterial( { ambient: 0x050505, color: 0x333333, specular: 0x555555, shininess: 10 } ) );
 
       debugCylinder = cylinder;
       console.log("created the debugCylinder");
@@ -17,7 +17,7 @@ function Lathe(scene)
       //cylinder.overdraw = true;
       scene.add(cylinder);
       cylinder.translateY(100);
-      cylinder.translateZ(-150);
+      cylinder.translateZ(-500);
       //cylinder.rotation.z = Math.PI/2;
       cylinder.material.wireframe = true;
       cylinder.material.vertexColors = THREE.FaceColors;
@@ -41,5 +41,5 @@ Lathe.prototype.setWidth = function(xval)
 
 Lathe.prototype.setHeight = function(yval)
 {
-      this.yscale = yval/100.0;
+      this.yscale = yval/50.0;
 }
