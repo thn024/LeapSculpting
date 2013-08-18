@@ -4,8 +4,9 @@
 **/
 function Hand(scene)
 {
-	this.palm = new THREE.Mesh(new THREE.CubeGeometry(30,30,30),
-		new THREE.MeshBasicMaterial({ color : new THREE.Color(0xFFFFFF) }));
+	this.palm = new THREE.Mesh(new THREE.CubeGeometry(100,20,100),
+		new THREE.MeshBasicMaterial({ color : new THREE.Color(0xFFFFFF),
+									transparent: true, opacity: 0.5 }));
 	this.palm.material.color.setRGB(Math.random(), Math.random(), Math.random());
 	this.palmNormal = new THREE.Vector3();
 	this.side = null;
@@ -54,6 +55,7 @@ Hand.prototype.onRemove = function()
 	for(fingers in this.fingers)
 	{
 		this.scene.remove(this.fingers[fingers].mesh);
+		this.scene.remove(this.fingers[fingers].boundMesh);
 		this.scene.remove(this.fingers[fingers].ray);
 		delete this.fingers[fingers];
 	}
@@ -110,6 +112,7 @@ Hand.prototype.updateFingers = function(fingerArray)
 			//console.log(fingerId);
 			this.fingers[fingerId] = new Finger();
 			scene.add(this.fingers[fingerId].mesh);
+			scene.add(this.fingers[fingerId].boundMesh);
 			scene.add(this.fingers[fingerId].ray);
 		}
 		var pointable = fingerArray[fingerId];
@@ -139,6 +142,7 @@ Hand.prototype.updateFingers = function(fingerArray)
 		this.fingers[fingerId].direction = new THREE.Vector3(dirX, dirY, dirZ);
 		
 		this.fingers[fingerId].mesh.position = this.fingers[fingerId].position;
+		this.fingers[fingerId].boundMesh.position = this.fingers[fingerId].position;
 
 
 		//this.fingers[fingerId].position = camera.matrix.multiplyVector3(this.fingers[fingerId].position);
@@ -153,7 +157,9 @@ Hand.prototype.updateFingers = function(fingerArray)
 	{
 		if(fingerArray[fingerId] == undefined)
 		{
+			console.log("some finger lost focus");
 			scene.remove(this.fingers[fingerId].mesh);
+			scene.remove(this.fingers[fingerId].boundMesh);
 			scene.remove(this.fingers[fingerId].ray)
 			delete this.fingers[fingerId];
 		}

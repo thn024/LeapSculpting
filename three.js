@@ -32576,6 +32576,7 @@ THREE.SphereGeometry = function ( radius, widthSegments, heightSegments, phiStar
 	thetaLength = thetaLength !== undefined ? thetaLength : Math.PI;
 
 	var x, y, vertices = [], uvs = [];
+	var firstVert;
 
 	for ( y = 0; y <= this.heightSegments; y ++ ) {
 
@@ -32587,11 +32588,23 @@ THREE.SphereGeometry = function ( radius, widthSegments, heightSegments, phiStar
 			var u = x / this.widthSegments;
 			var v = y / this.heightSegments;
 
-			var vertex = new THREE.Vector3();
-			vertex.x = - this.radius * Math.cos( phiStart + u * phiLength ) * Math.sin( thetaStart + v * thetaLength );
-			vertex.y = this.radius * Math.cos( thetaStart + v * thetaLength );
-			vertex.z = this.radius * Math.sin( phiStart + u * phiLength ) * Math.sin( thetaStart + v * thetaLength );
+			
+			if(x == this.widthSegments)
+			{
+				var vertex = firstVert;
+			}
+			else
+			{
+				var vertex = new THREE.Vector3();
+				vertex.x = - this.radius * Math.cos( phiStart + u * phiLength ) * Math.sin( thetaStart + v * thetaLength );
+				vertex.y = this.radius * Math.cos( thetaStart + v * thetaLength );
+				vertex.z = this.radius * Math.sin( phiStart + u * phiLength ) * Math.sin( thetaStart + v * thetaLength );
 
+				if(x == 0)
+				{
+					firstVert = vertex;
+				}
+			}
 			this.vertices.push( vertex );
 
 			verticesRow.push( this.vertices.length - 1 );
@@ -32608,10 +32621,21 @@ THREE.SphereGeometry = function ( radius, widthSegments, heightSegments, phiStar
 
 		for ( x = 0; x < this.widthSegments; x ++ ) {
 
-			var v1 = vertices[ y ][ x + 1 ];
-			var v2 = vertices[ y ][ x ];
-			var v3 = vertices[ y + 1 ][ x ];
-			var v4 = vertices[ y + 1 ][ x + 1 ];
+			if(x == this.widthSegments-1)
+			{
+				//console.log('stuff was here');
+				var v1 = vertices[ y ][ x + 1 ];
+				var v2 = vertices[ y ][ x ];
+				var v3 = vertices[ y + 1 ][ x ];
+				var v4 = vertices[ y + 1 ][ x + 1 ];
+			}
+			else
+			{
+				var v1 = vertices[ y ][ x + 1 ];
+				var v2 = vertices[ y ][ x ];
+				var v3 = vertices[ y + 1 ][ x ];
+				var v4 = vertices[ y + 1 ][ x + 1 ];
+			}
 
 			var n1 = this.vertices[ v1 ].clone().normalize();
 			var n2 = this.vertices[ v2 ].clone().normalize();
@@ -32624,8 +32648,9 @@ THREE.SphereGeometry = function ( radius, widthSegments, heightSegments, phiStar
 			var uv4 = uvs[ y + 1 ][ x + 1 ].clone();
 
 			if ( Math.abs( this.vertices[ v1 ].y ) === this.radius ) {
-
-				this.faces.push( new THREE.Face3( v1, v3, v4, [ n1, n3, n4 ] ) );
+				var faceToPush = new THREE.Face3( v1, v3, v4, [ n1, n3, n4 ]);
+					//faceToPush.left = this.faces();
+				this.faces.push(faceToPush);
 				this.faceVertexUvs[ 0 ].push( [ uv1, uv3, uv4 ] );
 
 			} else if ( Math.abs( this.vertices[ v3 ].y ) === this.radius ) {

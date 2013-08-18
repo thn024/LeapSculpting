@@ -4,18 +4,64 @@
     <style>
       canvas { width: 100%; height: 100%; background-color: #f0; }
     </style>
+
+  </head>
+  <body>
+
+    <div class="meny">
+      <h2>Heres the div where i should be putting menu items</h2>
+    </div>
+
+    <div class="meny-arrow"></div>
+
+    <div class="canvas"><div id="canvas">
+    </div>
+
+
     <script src="three.js"></script>
     <script src="leap.js"></script>
     <script src="Hand.js"></script>
     <script src="Finger.js"></script>
     <script src="Lathe.js"></script>
-    <script src="SphereGeometry.js"></script>
+    
     <script src="keyboard.js"></script>
-  </head>
-  <body>
+    <script src="meny.min.js"></script>
     <script>
 
-    var scene,renderer,camera,cube;
+    //----------------------------------------------------------------------
+    //MENU VARIABLES
+    //----------------------------------------------------------------------
+      var meny = Meny.create({
+        // The element that will be animated in from off screen
+        menuElement: document.querySelector( '.meny' ),
+
+        // The contents that gets pushed aside while Meny is active
+        contentsElement: document.querySelector( '.canvas' ),
+
+        // [optional] The alignment of the menu (top/right/bottom/left)
+        position: Meny.getQuery().p || 'bottom',
+
+        // [optional] The height of the menu (when using top/bottom position)
+        height: 200,
+
+        // [optional] The width of the menu (when using left/right position)
+        width: 260,
+
+        // [optional] Distance from mouse (in pixels) when menu should open
+        threshold: 40,
+
+        // [optional] Use mouse movement to automatically open/close
+        mouse: true,
+
+        // [optional] Use touch swipe events to open/close
+        touch: true
+      });
+
+    //initially set the menu to be closed.
+    var menuStatus = false;
+    //----------------------------------------------------------------------
+
+    var container,scene,renderer,camera,cube;
     var debug_mode = true;
     var spheres = {};
 
@@ -85,9 +131,14 @@
       //init camera, renderer and scene
       scene = new THREE.Scene();
       renderer = new THREE.WebGLRenderer();
+      renderer.shadowMapEnabled = true;
+      renderer.shadowMapSoft = true;
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setClearColorHex( 0x0099CC, 1 );
-      document.body.appendChild(renderer.domElement); 
+      container = document.getElementById('canvas');
+      document.body.appendChild(container);
+      //document.body.appendChild(renderer.domElement); 
+      container.appendChild(renderer.domElement);
 
       camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 3000 );
       initCamera();
@@ -96,24 +147,34 @@
 
 
       var material = new THREE.LineBasicMaterial({ color: 0xFFFFFF });
-      var Light = new THREE.PointLight(0xFFFFFF);
-      Light.position = {x:-20, y:600, z:30};
 
-      scene.add(Light);
-
-      var Light2 = new THREE.PointLight(0xFFFFFF);
-      Light2.position = {x:50, y: 0, z: -10}
-
-      scene.add(Light2);
-
-      var Light3 = new THREE.PointLight(0xFFFFFF);
-      Light2.position = {x:-100, y: 200, z: -10}
-
-      scene.add(Light3);
+      initLight(scene, new THREE.Vector3(-20,600,30));
+      //initLight(scene, new THREE.Vector3(50,0,-10));
+      initLight(scene, new THREE.Vector3(-100,200,-10));
 
 
       //var g = new Lathe(scene,0,0,0);
 
+    }
+
+    function initLight(scene, position)
+    {
+      var light = new THREE.DirectionalLight();
+      light.position.set(position.x, position.z, position.y);
+      light.intensity = 0.9;
+      light.castShadow = true;
+      light.shadowCameraVisible = true;
+      light.shadowDarkness = 0.4;
+      light.shadowMapWidth = light.shadowMapHeight = 2048;
+      light.shadowCameraNear = 100;
+      light.shadowCameraFar = 800;
+      light.shadowCameraLeft = -500;
+      light.shadowCameraRight = 500;
+      light.shadowCameraTop = 500;
+      light.shadowCameraBottom = -500;
+      light.visible = true;
+
+      scene.add(light);
     }
 
     function initCamera()
@@ -142,7 +203,8 @@
     var rightStart = false;
 
       var debugFrame;
-    function showHands(frame)
+
+    function processHandInfo(frame)
     {
           debugFrame = frame;
         isFlying = true;
@@ -230,7 +292,36 @@
             leftStart = handObj[hand.id];
           }
           
-          
+          //if we're in the play mode and the user has an open left hand
+          if(currentMode == MODES.FINISHED && handObj[hand.id].side == false)
+          {
+            if(handObj[hand.id].openPalm )
+            {
+              //if the menu is closed, open the menu;
+              if(!meny.isOpen())
+              {
+                meny.open();
+              }
+            }
+            else
+            {
+              if(meny.isOpen())
+              {
+                meny.close();
+              }
+            }
+          }
+          else
+          {
+            if(handsLength < 2)
+            {
+              if(meny.isOpen())
+              {
+                meny.close();
+              }
+            }
+          }
+
         }
 
 
@@ -303,14 +394,14 @@
             if(gesturesArray[gesture].normal[2] < 0)
             {
               //camera.position.x += 2;
-              cameraRotationDegrees += .05;
+              cameraRotationDegrees += .01;
               console.log("clockwise rotation");
 
             }
             else
             {
               //camera.position.x -= 2;
-              cameraRotationDegrees -= .05;
+              cameraRotationDegrees -= .01;
               console.log("counter clockwise rotation"); 
             }
               
@@ -414,7 +505,7 @@
       
       if(debug_mode)
       {
-        showHands(frame);
+        processHandInfo(frame);
       }
       
       rayCastPalm(frame);
@@ -441,6 +532,7 @@
 
 
     var fingerDebug;
+    var previousFaces = [];
     
     function checkMeshCollisions(handObject)
     {
@@ -480,12 +572,32 @@
         tempMatrix.makeRotationY(-cameraRotationDegrees);
         //tempMatrix = tempMatrix.getInverse(tempMatrix);
 
+        for(face in previousFaces)
+        {
+          previousFaces[face].color.setRGB(1,1,1);
+        }
+
+        previousFaces = [];
+
         for(finger in handObject.fingers)
         {
           //console.log(handObj[hand].fingers[finger].position);
           var ray = new THREE.Raycaster(handObject.fingers[finger].position, handObject.fingers[finger].direction)
           var collisionResults = ray.intersectObject(debugCylinder);
           fingerDebug = handObject.fingers[finger];
+
+          if(collisionResults.length > 0)
+          {
+            previousFaces.push(debugCylinder.geometry.faces[collisionResults[0].faceIndex]);
+            //previousFaces.push(debugCylinder.geometry.faces[collisionResults[0].faceIndex+1]);
+            //previousFaces.push(debugCylinder.geometry.faces[collisionResults[0].faceIndex-1]);
+            debugCylinder.geometry.faces[collisionResults[0].faceIndex].color.setRGB(collisionResults[0].distance/100,collisionResults[0].distance/100,collisionResults[0].distance/100);
+            /*
+            debugCylinder.geometry.faces[collisionResults[0].faceIndex+1].color.setRGB(collisionResults[0].distance/100,collisionResults[0].distance/100,collisionResults[0].distance/100);
+            debugCylinder.geometry.faces[collisionResults[0].faceIndex-1].color.setRGB(collisionResults[0].distance/100,collisionResults[0].distance/100,collisionResults[0].distance/100);
+            */
+            debugCylinder.geometry.colorsNeedUpdate = true;
+          }
           if ( collisionResults.length > 0 && collisionResults[0].distance < 30 ) 
             {
               //console.log(" Hit ");
@@ -502,10 +614,18 @@
               
               if(sculptingMode == MODES.PULL)
               {
-                debugCylinder.geometry.vertices[collisionResults[0].face.b].subSelf(tempDirection);
-                debugCylinder.geometry.vertices[collisionResults[0].face.c].subSelf(tempDirection);
-                debugCylinder.geometry.vertices[collisionResults[0].face.d].subSelf(tempDirection);
-                debugCylinder.geometry.vertices[collisionResults[0].face.a].subSelf(tempDirection);
+                debugCylinder.geometry.vertices[debugCylinder.geometry.faces[collisionResults[0].faceIndex].b].subSelf(tempDirection);
+                debugCylinder.geometry.vertices[debugCylinder.geometry.faces[collisionResults[0].faceIndex].c].subSelf(tempDirection);
+                debugCylinder.geometry.vertices[debugCylinder.geometry.faces[collisionResults[0].faceIndex].d].subSelf(tempDirection);
+                debugCylinder.geometry.vertices[debugCylinder.geometry.faces[collisionResults[0].faceIndex].a].subSelf(tempDirection);
+
+                /*
+                debugCylinder.geometry.vertices[debugCylinder.geometry.faces[collisionResults[0].faceIndex+1].b].subSelf(tempDirection);
+                debugCylinder.geometry.vertices[debugCylinder.geometry.faces[collisionResults[0].faceIndex+1].c].subSelf(tempDirection);
+                debugCylinder.geometry.vertices[debugCylinder.geometry.faces[collisionResults[0].faceIndex+1].d].subSelf(tempDirection);
+                debugCylinder.geometry.vertices[debugCylinder.geometry.faces[collisionResults[0].faceIndex+1].a].subSelf(tempDirection);
+                */
+                //debugCylinder.geometry.faces[collisionResults[0].faceIndex];
               }
               else if(sculptingMode == MODES.PUSH)
               {
@@ -514,6 +634,7 @@
                 debugCylinder.geometry.vertices[collisionResults[0].face.d].addSelf(tempDirection);
                 debugCylinder.geometry.vertices[collisionResults[0].face.a].addSelf(tempDirection);
               }
+
 
               //debugCylinder.geometry.__dirtyVertices = true;
               //debugCylinder.geometry.dynamic = true;

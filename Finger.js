@@ -1,7 +1,14 @@
 function Finger(scene)
 {
-	this.mesh = new THREE.Mesh(new THREE.CubeGeometry(10,10,10), new THREE.MeshBasicMaterial({ color : new THREE.Color(0xFFFFFF) }));
+	this.mesh = new THREE.Mesh(	new THREE.SphereGeometry(10,10,10),
+								new THREE.MeshBasicMaterial({ 	color : new THREE.Color(0xFFFFFF)}));
+	this.boundMesh = new THREE.Mesh(	new THREE.SphereGeometry(30,10,10),
+								new THREE.MeshBasicMaterial({ 	color : new THREE.Color(0xFFFFFF),
+																transparent: true, opacity: 0.5 }));
+	//this.mesh.add(this.boundMesh);
 	this.mesh.material.color.setRGB(Math.random(), Math.random(), Math.random());
+	this.mesh.castShadow = true;
+	this.mesh.receiveShadow = true;
 	this.direction = new THREE.Vector3(0,0,0);
 	this.position = new THREE.Vector3(0,0,0);
 
