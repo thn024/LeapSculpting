@@ -3,16 +3,207 @@
     <title>Camera - Leap</title>
     <style>
       canvas { width: 100%; height: 100%; background-color: #f0; }
+      .meny {
+          height: 100%;
+          width: 100%;
+          overflow:hidden;
+          background-color: #FFFFFF;
+          display:table;
+          width:auto;
+            }
+      .meny2 {
+          height: 100%;
+          width: 100%;
+          overflow:hidden;
+          background-color: #FFFFFF;
+          display:table;
+          width:auto;
+            }
+      .shapesMenu {
+          height: 100%;
+          width: 100%;
+          overflow:hidden;
+          background-color: #FFFFFF;
+          display:table;
+          width:auto;
+      }
+      .row{
+          display:table-row;
+          width:auto;
+          clear:both;
+      }
+      .col{
+        float:left;/*fix for  buggy browsers*/
+        display:table-column;         
+        width:25%;         
+        text-align:center;
+      }
+      #shape_picker {
+          height: 100%;
+          width:100%;
+          overflow:hidden;
+          text-align: center;
+            }
+      #scale {
+          height: 100%;
+          width:100%;
+          overflow:hidden;
+          text-align: center;
+            }
+      #in_out_toggle {
+          height: 100%;
+          width:100%;
+          overflow:hidden;
+          text-align: center;
+            }
+      #wireframe_toggle {
+          height: 100%;
+          width:100%;
+          overflow:hidden;
+          text-align: center;
+            }
+      #sample1
+        {
+          height: 100%;
+          width:100%;
+          overflow:hidden;
+          text-align: center;
+        }
+      #sample2
+        {
+          height: 100%;
+          width:100%;
+          overflow:hidden;
+          text-align: center;
+        }
+      #sample3
+        {
+          height: 100%;
+          width:100%;
+          overflow:hidden;
+          text-align: center;
+        }
+      #sample4
+        {
+          height: 100%;
+          width:100%;
+          overflow:hidden;
+          text-align: center;
+        }
+      #Cube
+        {
+          height: 100%;
+          width:100%;
+          overflow:hidden;
+          text-align: center;
+        }
+      #Sphere
+        {
+          height: 100%;
+          width:100%;
+          overflow:hidden;
+          text-align: center;
+        }
+      #Cylinder
+        {
+          height: 100%;
+          width:100%;
+          overflow:hidden;
+          text-align: center;
+        }
+      #Torus
+        {
+          height: 100%;
+          width:100%;
+          overflow:hidden;
+          text-align: center;
+        }
+
+
+
+        @-webkit-keyframes picked /* Safari and Chrome */
+        {
+          0%   {background:white;}
+          90%  {background:gray;}
+          100%  {background:blue;}
+        }
+
     </style>
 
   </head>
   <body>
 
     <div class="meny">
-      <h2>Heres the div where i should be putting menu items</h2>
+      
+      <div class = "col">
+        <div id = "shape_picker">
+          <H2>Pick A Shape</H2>
+        </div>
+      </div>
+      <div class = "col">
+        <div id = "scale" >
+          <H2>Scale Object</H2>
+        </div>
+      </div>
+      <div class = "col">
+        <div id = "in_out_toggle">
+          <H2>Geometry Mode Toggle</H2>
+        </div>
+      </div>
+      <div class = "col">
+        <div id = "wireframe_toggle">
+          <H2>Wireframe Toggle</H2>
+        </div>
+      </div>
     </div>
 
-    <div class="meny-arrow"></div>
+    <div class="meny2">
+      
+      <div class = "col">
+        <div id = "sample1">
+          <H2>sample1</H2>
+        </div>
+      </div>
+      <div class = "col">
+        <div id = "sample2" >
+          <H2>sample2</H2>
+        </div>
+      </div>
+      <div class = "col">
+        <div id = "sample3">
+          <H2>sample3</H2>
+        </div>
+      </div>
+      <div class = "col">
+        <div id = "sample4">
+          <H2>sample4</H2>
+        </div>
+      </div>
+    </div>
+
+    <div class="shapesMenu">
+      
+      <div class = "col">
+        <div id = "Cube">
+          <H2>Cube</H2>
+        </div>
+      </div>
+      <div class = "col">
+        <div id = "Sphere" >
+          <H2>Sphere</H2>
+        </div>
+      </div>
+      <div class = "col">
+        <div id = "Cylinder">
+          <H2>Cylinder</H2>
+        </div>
+      </div>
+      <div class = "col">
+        <div id = "Torus">
+          <H2>Torus</H2>
+        </div>
+      </div>
+    </div>
 
     <div class="canvas"><div id="canvas">
     </div>
@@ -28,12 +219,15 @@
     <script src="meny.min.js"></script>
     <script>
 
+    var menuItems = ["shape_picker", "scale", "in_out_toggle", "wireframe_toggle",
+                     "sample1", "sample2", "sample3", "sample4"];
+    var shapeItems = ["Cube", "Sphere", "Cylinder", "Torus"];
     //----------------------------------------------------------------------
     //MENU VARIABLES
     //----------------------------------------------------------------------
       var meny = Meny.create({
         // The element that will be animated in from off screen
-        menuElement: document.querySelector( '.meny' ),
+        menuElement: document.querySelector( '.meny2' ),
 
         // The contents that gets pushed aside while Meny is active
         contentsElement: document.querySelector( '.canvas' ),
@@ -51,14 +245,65 @@
         threshold: 40,
 
         // [optional] Use mouse movement to automatically open/close
-        mouse: true,
+        mouse: false,
 
         // [optional] Use touch swipe events to open/close
-        touch: true
+        touch: false
+      });
+
+      var meny2 = Meny.create({
+        // The element that will be animated in from off screen
+        menuElement: document.querySelector( '.meny' ),
+
+        // The contents that gets pushed aside while Meny is active
+        contentsElement: document.querySelector( '.canvas' ),
+
+        // [optional] The alignment of the menu (top/right/bottom/left)
+        position: Meny.getQuery().p || 'top',
+
+        // [optional] The height of the menu (when using top/bottom position)
+        height: 200,
+
+        // [optional] The width of the menu (when using left/right position)
+        width: 260,
+
+        // [optional] Distance from mouse (in pixels) when menu should open
+        threshold: 40,
+
+        // [optional] Use mouse movement to automatically open/close
+        mouse: false,
+
+        // [optional] Use touch swipe events to open/close
+        touch: false
+      });
+
+      var shapesMenu = Meny.create({
+        // The element that will be animated in from off screen
+        menuElement: document.querySelector( '.shapesMenu' ),
+
+        // The contents that gets pushed aside while Meny is active
+        contentsElement: document.querySelector( '.canvas' ),
+
+        // [optional] The alignment of the menu (top/right/bottom/left)
+        position: Meny.getQuery().p || 'top',
+
+        // [optional] The height of the menu (when using top/bottom position)
+        height: 200,
+
+        // [optional] The width of the menu (when using left/right position)
+        width: 260,
+
+        // [optional] Distance from mouse (in pixels) when menu should open
+        threshold: 40,
+
+        // [optional] Use mouse movement to automatically open/close
+        mouse: false,
+
+        // [optional] Use touch swipe events to open/close
+        touch: false
       });
 
     //initially set the menu to be closed.
-    var menuStatus = false;
     //----------------------------------------------------------------------
 
     var container,scene,renderer,camera,cube;
@@ -107,9 +352,22 @@
                         WIDTH : {value : 2, name: "WIDTH"},
                         FINISHED : {value : 3, name : "FINISHED"},
                         PULL : {value : 4, name : "PULL"},
-                        PUSH : {value : 5, name : "PUSH"}
+                        PUSH : {value : 5, name : "PUSH"},
+                        PICK : {value : 6, name : "PICK"},
+                        SHAPEPICK : {value : 7, name : "SHAPEPICK"}
                       };
-    var currentMode = MODES.INITIAL;
+
+    //------------------------------------
+    //MENU STUFF
+    //------------------------------------
+    var oldMenuItem;
+    var currentMenuItem;
+    var defaultMenuColor = "White";
+    var shapeExists = false;
+    var menuStatus = true;
+    var leftDetected = false;
+    //------------------------------------
+    var currentMode = MODES.PICK;
     var sculptingMode = MODES.PULL;
 
     var lathe;
@@ -148,12 +406,25 @@
 
       var material = new THREE.LineBasicMaterial({ color: 0xFFFFFF });
 
-      initLight(scene, new THREE.Vector3(-20,600,30));
+      initLight(scene, new THREE.Vector3(-50,200,30));
       //initLight(scene, new THREE.Vector3(50,0,-10));
       initLight(scene, new THREE.Vector3(-100,200,-10));
 
 
       //var g = new Lathe(scene,0,0,0);
+      /*
+      var div = document.getElementById( 'menu' );
+      div.onmouseover = function() {
+        this.style.backgroundColor = 'green';
+        var h2s = this.getElementsByTagName( 'h2' );
+        h2s[0].style.backgroundColor = 'blue';
+      };
+      div.onmouseout = function() {
+        this.style.backgroundColor = 'transparent';
+        var h2s = this.getElementsByTagName( 'h2' );
+        h2s[0].style.backgroundColor = 'transparent';
+      };
+      */
 
     }
 
@@ -163,7 +434,7 @@
       light.position.set(position.x, position.z, position.y);
       light.intensity = 0.9;
       light.castShadow = true;
-      light.shadowCameraVisible = true;
+      //light.shadowCameraVisible = true;
       light.shadowDarkness = 0.4;
       light.shadowMapWidth = light.shadowMapHeight = 2048;
       light.shadowCameraNear = 100;
@@ -204,13 +475,16 @@
 
       var debugFrame;
 
+
+
     function processHandInfo(frame)
     {
-          debugFrame = frame;
+        debugFrame = frame;
         isFlying = true;
         leftStart = false;
         rightStart = false;
         openPalmCount = 0;
+        leftDetected = false;
 
         if (frame.hands === undefined ) { 
           var handsLength = 0 
@@ -229,10 +503,9 @@
           var posX = (hand.palmPosition[0]*1.5);
           var posY = (hand.palmPosition[2]*1)-600;
           var posZ = (hand.palmPosition[1]*1)-200;
-          var rotX = (hand.rotation[1][2]*90);
-          var rotY = (hand.rotation[1][1]*90);
-          var rotZ = (hand.rotation[1][0]*90);
-          //console.log(hand.id);
+          var rotX = (hand.rotation[1][2]);
+          var rotY = (hand.rotation[1][1]);
+          var rotZ = (hand.rotation[1][0]);
           
 
           /*
@@ -259,6 +532,7 @@
             //console.log("about to make a new hand cube id: " + hand.id);
           }
           handObj[hand.id].palm.position = new THREE.Vector3(posX,posZ,posY);
+          //handObj[hand.id].palm.rotation = new THREE.Vector3(-rotX, 0, rotZ);
           handObj[hand.id].palmNormal = new THREE.Vector3(hand.palmNormal[0], hand.palmNormal[1], hand.palmNormal[2]);
           
 
@@ -273,11 +547,131 @@
 
           //console.log(handObj[hand.id].noFingers);
 
+          if(currentMode == MODES.FINISHED )
+          {
+            
+            if(handObj[hand.id].side == false )
+            {
+              console.log('left detected');
+              leftDetected = true;
+              if(handObj[hand.id].openPalm)
+              {
+                //console.log("opening menu");
+                currentMode = MODES.PICK
+                menuStatus = true;
+              }
+            }
+          }
 
-          if(currentMode == MODES.INITIAL && openPalmCount == 2)
+
+          if(currentMode == MODES.PICK && menuStatus)
+          {
+              if(!meny.isOpen())
+              {
+                meny.open();
+                meny2.open();
+              }
+                
+            //if its the right hand and it has 1 finger up
+            if(handObj[hand.id].side == true && handObj[hand.id].singlePointer == true && meny.isOpen())
+            {
+                for(fingerId in handObj[hand.id].fingers)
+                {
+                  if(handObj[hand.id].fingers[fingerId].direction.y >= .10)
+                  {
+                    if(handObj[hand.id].fingers[fingerId].direction.x <= -0.25)
+                    {
+                      console.log("picking 1");
+                      selectMenuItem(menuItems[0]);
+                    }
+                    else if(handObj[hand.id].fingers[fingerId].direction.x <= 0.00)
+                    {
+                      console.log("picking 2");
+                      selectMenuItem(menuItems[1]);
+                    }
+                    else if(handObj[hand.id].fingers[fingerId].direction.x <= 0.25)
+                    {
+                      console.log("picking 3");
+                      selectMenuItem(menuItems[2]);
+                    }
+                    else
+                    {
+                      console.log("picking 4");
+                      selectMenuItem(menuItems[3]);
+                    }
+                  }
+                  else if (handObj[hand.id].fingers[fingerId].direction.y <= .20)
+                  {
+                    if(handObj[hand.id].fingers[fingerId].direction.x <= -0.25)
+                    {
+                      console.log("picking 5");
+                      selectMenuItem(menuItems[4]);
+                    }
+                    else if(handObj[hand.id].fingers[fingerId].direction.x <= 0.00)
+                    {
+                      console.log("picking 6");
+                      selectMenuItem(menuItems[5]);
+                    }
+                    else if(handObj[hand.id].fingers[fingerId].direction.x <= 0.25)
+                    {
+                      console.log("picking 7");
+                      selectMenuItem(menuItems[6]);
+                    }
+                    else
+                    {
+                      console.log("picking 8");
+                      selectMenuItem(menuItems[7]);
+                    }
+                  }
+                  else
+                  {
+                    selectMenuItems("none");
+                  }
+                }
+                
+            }
+          }
+          else if(currentMode == MODES.SHAPEPICK)
+          {
+            if(handObj[hand.id].side == true && handObj[hand.id].singlePointer == true && shapesMenu.isOpen())
+            {
+              for(fingerId in handObj[hand.id].fingers)
+              {
+                if(handObj[hand.id].fingers[fingerId].direction.y >= .10)
+                {
+                  if(handObj[hand.id].fingers[fingerId].direction.x <= -0.25)
+                  {
+                    console.log("picking 1");
+                    selectMenuItem(shapeItems[0]);
+                  }
+                  else if(handObj[hand.id].fingers[fingerId].direction.x <= 0.00)
+                  {
+                    console.log("picking 2");
+                    selectMenuItem(shapeItems[1]);
+                  }
+                  else if(handObj[hand.id].fingers[fingerId].direction.x <= 0.25)
+                  {
+                    console.log("picking 3");
+                    selectMenuItem(shapeItems[2]);
+                  }
+                  else
+                  {
+                    console.log("picking 4");
+                    selectMenuItem(shapeItems[3]);
+                  }
+                }
+                else
+                {
+                  selectMenuItems("none");
+                }
+              }
+            }
+          }
+
+          if(currentMode == MODES.INITIAL)
           {
             console.log("start the cylinder mesh");
-            lathe = new Lathe(scene);
+            //lathe = new Lathe(scene);
             currentMode = MODES.HEIGHT;
             console.log("going to height mode")
           }
@@ -292,43 +686,40 @@
             leftStart = handObj[hand.id];
           }
           
-          //if we're in the play mode and the user has an open left hand
-          if(currentMode == MODES.FINISHED && handObj[hand.id].side == false)
+          //if we're not in the menu mode
+          
+
+
+          if(menuStatus)
           {
-            if(handObj[hand.id].openPalm )
+            if(!meny.isOpen())
             {
-              //if the menu is closed, open the menu;
-              if(!meny.isOpen())
-              {
-                meny.open();
-              }
-            }
-            else
-            {
-              if(meny.isOpen())
-              {
-                meny.close();
-              }
+              meny.open();
+              meny2.open();
             }
           }
-          else
+          else if(!menuStatus && currentMode == MODES.FINISHED)
           {
-            if(handsLength < 2)
+            if(meny.isOpen())
             {
-              if(meny.isOpen())
-              {
-                meny.close();
-              }
+              meny.close();
+              meny2.close();
+              shapesMenu.close();
             }
           }
+          
 
         }
 
-
+        if(leftDetected == false && shapeExists && currentMode == MODES.PICK)
+          {
+            menuStatus = false;
+            currentMode = MODES.FINISHED;
+          }
 
         
         //console.log(isFlying);
-
+        
         //deleting
         for (handId in handIds) {
           //console.log("handId " + handId);
@@ -486,6 +877,7 @@
         }
     }
 
+    //THIS IS THE MAIN LOOP!
     controller.loop(function(frame) {
       var startX = camera.position.x;
       var startY = camera.position.y;
@@ -512,21 +904,24 @@
 
       if (frame.valid) {
         debug = frame;
-
-        if (state == null) {
-          if (frame.hands.length > 0 && frame.pointables.length <= 1) {
-            
-          }
-        } else if (state == 'moving') {
-          var t = startFrame.translation(frame);
-          cube.position.x = t[0] * 10 + startX;
-          cube.position.y = t[1] * 10 + startY;
-          cube.position.z = t[2] * 10 + startZ;
-          if (frame.hands.length == 1 || frame.pointables.legnth > 1) {
-            state = null;
-          }
-        }
       }
+
+
+      //after you calculate all the info, if you selected a menu item, change the color of the menu item
+      if (oldMenuItem != null && oldMenuItem != currentMenuItem)
+      {
+        oldMenuItem.style.webkitAnimation = "";
+      }
+      if(currentMenuItem != null)
+      {
+        currentMenuItem.style.webkitAnimation = "picked";
+        currentMenuItem.style.webkitAnimationDuration = "2s";
+        //currentMenuItem.style.webkitAnimationFillMode = "forwards";
+      }
+      oldMenuItem = currentMenuItem;
+
+
+      //now finally render the scene
       renderer.render(scene, camera);
     });
 
@@ -610,8 +1005,9 @@
               debugCylinder.geometry.vertices[collisionResults[0].face.c].subSelf(collisionResults[0].face.normal.clone());
               debugCylinder.geometry.vertices[collisionResults[0].face.d].subSelf(collisionResults[0].face.normal.clone());
               */
+
               var tempDirection = tempMatrix.multiplyVector3(handObject.fingers[finger].direction);
-              
+              //var tempDirection = collisionResults[0].face.normal;
               if(sculptingMode == MODES.PULL)
               {
                 debugCylinder.geometry.vertices[debugCylinder.geometry.faces[collisionResults[0].faceIndex].b].subSelf(tempDirection);
@@ -670,9 +1066,143 @@
     }
 
 
+    function selectMenuItem(menuItem)
+    {
+      currentMenuItem = document.getElementById(menuItem);
+      //document.getElementById(menuItem).style.backgroundColor = "Blue";
+    }
+
     function main()
     {
       init();
+
+      addEventListeners();
+    }
+
+    //-------------------------------------------------------------------------
+    //EVENT LISTENERS FOR SPECIFIC MENU ITEM SELECTIONS!
+    //-------------------------------------------------------------------------
+    function addEventListeners()
+    {
+      
+      var element = document.getElementById(menuItems[0]);
+      element.addEventListener('webkitAnimationEnd', function()
+      {
+        console.log("you just finished picking item 0");
+        meny.close();
+        meny2.close();
+        shapesMenu.open();
+        currentMode = MODES.SHAPEPICK;
+        console.log("something");
+      }, false);
+
+      element = document.getElementById(menuItems[1]);
+      element.addEventListener('webkitAnimationEnd', function()
+      {
+        console.log("you just finished picking item 1");
+        meny.close();
+        meny2.close();
+        currentMode = MODES.HEIGHT;
+        menuStatus = false;
+      }, false);
+
+      element = document.getElementById(menuItems[2]);
+      element.addEventListener('webkitAnimationEnd', function()
+      {
+        console.log("you just finished picking item 2");
+        meny.close();
+        meny2.close();
+        if(sculptingMode == MODES.PUSH)
+        {
+          sculptingMode = MODES.PULL;
+        }
+        else
+        {
+          sculptingMode = MODES.FINSHED;
+        }
+        menuStatus = false;
+        currentMode = MODES.HEIGHT;
+      }, false);
+
+      element = document.getElementById(menuItems[3]);
+      element.addEventListener('webkitAnimationEnd', function()
+      {
+        console.log("you just finished picking item 3");
+        meny.close();
+        meny2.close();
+        currentMode = MODES.FINISHED;
+        menuStatus = false;
+      }, false);
+
+      element = document.getElementById(menuItems[4]);
+      element.addEventListener('webkitAnimationEnd', function()
+      {
+        console.log("you just finished picking item 4");
+        meny.close();
+        meny2.close();
+        currentMode = MODES.FINISHED;
+        menuStatus = false;
+      }, false);
+
+      element = document.getElementById(shapeItems[0]);
+      element.addEventListener('webkitAnimationEnd', function()
+      {
+        console.log("Making a Cube");
+        shapesMenu.close();
+        meny.close();
+        meny2.close();
+        currentMode = MODES.INITIAL;
+        if(shapeExists) {scene.remove(debugCylinder);}
+        lathe = new Lathe(scene, new THREE.CubeGeometry(100, 100, 100, 40, 40, 40));
+        console.log("something");
+        shapeExists = true;
+        menuStatus = false;
+      }, false);
+
+      element = document.getElementById(shapeItems[1]);
+      element.addEventListener('webkitAnimationEnd', function()
+      {
+        console.log("Making a Sphere");
+        shapesMenu.close();
+        meny.close();
+        meny2.close();
+        currentMode = MODES.INITIAL;
+        if(shapeExists) {scene.remove(debugCylinder);}
+        lathe = new Lathe(scene, new THREE.SphereGeometry(100, 100, 100));
+        console.log("something");
+        shapeExists = true;
+        menuStatus = false;
+      }, false);
+
+      element = document.getElementById(shapeItems[2]);
+      element.addEventListener('webkitAnimationEnd', function()
+      {
+        console.log("Making a Cylinder");
+        shapesMenu.close();
+        meny.close();
+        meny2.close();
+        currentMode = MODES.INITIAL;
+        if(shapeExists) {scene.remove(debugCylinder);}
+        lathe = new Lathe(scene, new THREE.CylinderGeometry(50, 50, 100, 100, 100));
+        console.log("something");
+        shapeExists = true;
+        menuStatus = false;
+      }, false);
+
+      element = document.getElementById(shapeItems[3]);
+      element.addEventListener('webkitAnimationEnd', function()
+      {
+        console.log("Making a Torus");
+        shapesMenu.close();
+        meny.close();
+        meny2.close();
+        currentMode = MODES.INITIAL;
+        if(shapeExists) {scene.remove(debugCylinder);}
+        lathe = new Lathe(scene, new THREE.TorusGeometry(100, 100, 100, 100));
+        shapeExists = true;
+        menuStatus = false;
+      }, false);
+      
     }
     </script>
     <div id="out"></div>

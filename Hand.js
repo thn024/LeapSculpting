@@ -20,6 +20,7 @@ function Hand(scene)
 	this.openPalm = false;
 	this.selectionCounter = 0;
 	this.noFingers = false;
+	this.singlePointer = false;
 
 }
 
@@ -78,7 +79,7 @@ Hand.prototype.updateFingers = function(fingerArray)
 
 	dg = this.fingers;
 
-
+	this.singlePointer = false;
 	/*
 	set some simple flags:
 	theres more than 3 fingers: set openPalm flag
@@ -91,8 +92,12 @@ Hand.prototype.updateFingers = function(fingerArray)
 	}
 	else if(fingerArray.length <= 1)
 	{
-
 		this.noFingers = true;
+		
+		if(fingerArray.length == 1)
+		{
+			this.singlePointer = true;
+		}
 	}
 	else
 	{
