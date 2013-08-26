@@ -600,7 +600,7 @@
                       selectMenuItem(menuItems[3]);
                     }
                   }
-                  else if (handObj[hand.id].fingers[fingerId].direction.y <= .20)
+                  else if (handObj[hand.id].fingers[fingerId].direction.y <= -.20)
                   {
                     if(handObj[hand.id].fingers[fingerId].direction.x <= -0.25)
                     {
@@ -625,7 +625,7 @@
                   }
                   else
                   {
-                    selectMenuItems("none");
+                    selectMenuItem(null);
                   }
                 }
                 
@@ -662,7 +662,7 @@
                 }
                 else
                 {
-                  selectMenuItems("none");
+                  selectMenuItem(null);
                 }
               }
             }
@@ -735,9 +735,21 @@
     }
 
 
-    function rotateMesh(deg)
+    function rotateMesh()
     {
-      debugCylinder.rotation.y = deg;
+      if(shapeExists)
+      {
+        
+        if(Math.abs(cameraRotationDegrees) <= .0000001)
+        {
+          cameraRotationDegrees = 0;
+        }
+        else
+        {
+          debugCylinder.rotation.y += cameraRotationDegrees;
+          cameraRotationDegrees = cameraRotationDegrees/1.2;
+        }
+      }
     }
 
     function handleGestures(gesturesArray)
@@ -755,12 +767,17 @@
           case "swipe" : 
 
             //console.log(gesturesArray[gesture].direction);
-            if(gesturesArray[gesture].speed > 600.0)
+            if(side)
+            {
+              break;
+            }
+            if(gesturesArray[gesture].speed > 700.0 && shapeExists)
             {
             //console.log(hand.swipeDirection);
-            //cameraRotationDegrees += (gesturesArray[gesture].position[0] - gesturesArray[gesture].startPosition[0]) / 40.0;
+            cameraRotationDegrees = (gesturesArray[gesture].position[0] - gesturesArray[gesture].startPosition[0]) / 2000.0;
             //rotateCamera(cameraRotationDegrees);
             }
+            
             break;
           case "circle" :
           /*
@@ -785,14 +802,14 @@
             if(gesturesArray[gesture].normal[2] < 0)
             {
               //camera.position.x += 2;
-              cameraRotationDegrees += .01;
+              cameraRotationDegrees += .005;
               console.log("clockwise rotation");
 
             }
             else
             {
               //camera.position.x -= 2;
-              cameraRotationDegrees -= .01;
+              cameraRotationDegrees -= .005;
               console.log("counter clockwise rotation"); 
             }
               
@@ -800,8 +817,7 @@
           //console.log(gesturesArray[gesture]);
           //console.log(cameraRotationDegrees);
           
-            rotateMesh(cameraRotationDegrees);
-          return;
+            //rotateMesh(cameraRotationDegrees);
           break;
           case "keyTap" :
           if(side)
@@ -893,7 +909,7 @@
         handleGestures(frame.gestures);
       }
 
-
+      rotateMesh();
       
       if(debug_mode)
       {
@@ -908,9 +924,12 @@
 
 
       //after you calculate all the info, if you selected a menu item, change the color of the menu item
-      if (oldMenuItem != null && oldMenuItem != currentMenuItem)
+      if ((oldMenuItem != currentMenuItem) || currentMode == MODES.FINISHED)
       {
-        oldMenuItem.style.webkitAnimation = "";
+        if(oldMenuItem != null)
+        {
+          oldMenuItem.style.webkitAnimation = "";
+        }
       }
       if(currentMenuItem != null)
       {
@@ -964,7 +983,7 @@
         debugCylinder.geometry.dynamic = true;
         var tempMatrix = new THREE.Matrix4();
         //var c = Math.cos( cameraRotationDegrees ), s = Math.sin( cameraRotationDegrees );
-        tempMatrix.makeRotationY(-cameraRotationDegrees);
+        tempMatrix.makeRotationY(-debugCylinder.rotation.y);
         //tempMatrix = tempMatrix.getInverse(tempMatrix);
 
         for(face in previousFaces)
@@ -1118,10 +1137,10 @@
         }
         else
         {
-          sculptingMode = MODES.FINSHED;
+          sculptingMode = MODES.PUSH;
         }
         menuStatus = false;
-        currentMode = MODES.HEIGHT;
+        currentMode = MODES.FINISHED;
       }, false);
 
       element = document.getElementById(menuItems[3]);
@@ -1132,6 +1151,7 @@
         meny2.close();
         currentMode = MODES.FINISHED;
         menuStatus = false;
+        debugCylinder.material.wireframe = !debugCylinder.material.wireframe;
       }, false);
 
       element = document.getElementById(menuItems[4]);
